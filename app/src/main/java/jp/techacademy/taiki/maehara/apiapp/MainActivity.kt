@@ -6,6 +6,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 class MainActivity : AppCompatActivity(), FragmentCallback {
 
@@ -14,6 +15,7 @@ class MainActivity : AppCompatActivity(), FragmentCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setSupportActionBar(findViewById(R.id.top_toolbar))
 
         // ViewPager2の初期化
         viewPager2.apply {
@@ -30,14 +32,35 @@ class MainActivity : AppCompatActivity(), FragmentCallback {
         }.attach()
     }
 
-    override fun onClickItem(url: String) {
-        WebViewActivity.start(this, url)
+//    override fun onClickItem(url: String) {
+//        WebViewActivity.start(this, url)
+//    }
+
+    override fun onRestart() {
+        super.onRestart()
+        (viewPagerAdapter.fragments[VIEW_PAGER_POSITION_API] as ApiFragment).updateView()
+        (viewPagerAdapter.fragments[VIEW_PAGER_POSITION_FAVORITE] as FavoriteFragment).updateData()
+    }
+
+    override fun onClickItem(shop: Shop) {
+        onClickItem(FavoriteShop().apply{
+            id = shop.id
+            name = shop.name
+            imageUrl = shop.logoImage
+            address = shop.address
+            url = if (shop.couponUrls.sp.isNotEmpty()) shop.couponUrls.sp else shop.couponUrls.pc
+        })
+    }
+
+    override fun onClickItem(favoriteShop: FavoriteShop) {
+        WebViewActivity.start(this, favoriteShop)
     }
 
     override fun onAddFavorite(shop: Shop) { // Favoriteに追加するときのメソッド(Fragment -> Activityへ通知する)
         FavoriteShop.insert(FavoriteShop().apply {
             id = shop.id
             name = shop.name
+            address = shop.address
             imageUrl = shop.logoImage
             url = if (shop.couponUrls.sp.isNotEmpty()) shop.couponUrls.sp else shop.couponUrls.pc
         })
@@ -67,8 +90,8 @@ class MainActivity : AppCompatActivity(), FragmentCallback {
     }
 
     companion object {
-        private const val VIEW_PAGER_POSITION_API = 0
-        private const val VIEW_PAGER_POSITION_FAVORITE = 1
+       private const val VIEW_PAGER_POSITION_API = 0
+       private const val VIEW_PAGER_POSITION_FAVORITE = 1
     }
 
 }
