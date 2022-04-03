@@ -40,6 +40,7 @@ open class FavoriteShop: RealmObject(), Serializable {
                 it.insertOrUpdate(favoriteShop)
             }
 
+        //論理削除
         fun delete(id: String) = // idでお気に入りから削除する
             Realm.getDefaultInstance().use { realm ->
                 realm.where(FavoriteShop::class.java)
@@ -47,10 +48,23 @@ open class FavoriteShop: RealmObject(), Serializable {
                     .isNull(FavoriteShop::flag.name) // 課題:物理削除から理論削除へ
                     .findFirst()?.also { deleteShop ->
                         realm.executeTransaction {
-                            deleteShop.deleteFromRealm()
+                            deleteShop.flag = Calendar.getInstance().time
                         }
                     }
             }
+
+        //物理削除
+//        fun delete(id: String) = // idでお気に入りから削除する
+//            Realm.getDefaultInstance().use { realm ->
+//                realm.where(FavoriteShop::class.java)
+//                    .equalTo(FavoriteShop::id.name, id)
+//                    .isNull(FavoriteShop::flag.name) // 課題:物理削除から理論削除へ
+//                    .findFirst()?.also { deleteShop ->
+//                        realm.executeTransaction {
+//                            deleteShop.deleteFromRealm()
+//                        }
+//                    }
+//            }
 
 
     }
